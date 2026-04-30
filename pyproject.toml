@@ -1,0 +1,49 @@
+[build-system]
+requires      = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name        = "pcd-motion"
+version     = "1.0.0"
+description = "A small Python pipeline for analysing motion in LiDAR / depth-camera point-cloud sequences via Open3D + ICP."
+readme      = "README.md"
+requires-python = ">=3.10"
+license     = { text = "MIT" }
+authors     = [{ name = "Bliss Janga" }]
+keywords    = [
+    "point-cloud", "open3d", "icp", "lidar",
+    "computer-vision", "robotics", "pca", "motion-estimation",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Image Processing",
+]
+dependencies = [
+    "numpy>=1.23",
+    "open3d>=0.17",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "pytest-cov>=4.0", "ruff>=0.4"]
+
+[project.urls]
+Homepage = "https://github.com/Janga786/lidar-pointcloud-motion-pipeline"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+packages    = ["pcd_motion"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts   = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "B", "SIM"]
+ignore = ["E741"]
