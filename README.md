@@ -141,7 +141,7 @@ pytest -q                # 12 synthetic-cloud unit tests
 The tests use procedurally generated point clouds (no LiDAR
 hardware required) to verify:
 
-- AABB extents recover the synthesised box dimensions to within 5 %.
+- AABB extents recover the synthesised box dimensions to within 0.05 units.
 - PCA correctly identifies the long axis of a 5 × 0.1 × 0.1 stick.
 - The motion detector flags translated clouds and clears static ones.
 - The axis/angle decomposition round-trips through a known SO(3)
