@@ -1,44 +1,27 @@
-<div align="center">
-
 # LiDAR Point-Cloud Motion Pipeline
 
-**A small Python pipeline for analysing motion in LiDAR / depth-camera point-cloud sequences: dimensions from axis-aligned bounding boxes, principal-axis orientation via PCA, frame-pair motion detection, and ICP-based rotation-rate estimation — all built directly on top of Open3D and NumPy with no opaque vendor library in the loop.**
+A small Python package (Open3D + NumPy) that estimates the size, orientation, and rotation rate of an object from a sequence of time-of-flight point clouds.
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![Open3D](https://img.shields.io/badge/open3d-0.17%2B-9b59b6.svg)](https://www.open3d.org/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-
-</div>
+It grew out of my algorithm work on a junior-design team project (CE 315, Fort Lewis College, Fall 2024): point-cloud dimension and rotation-axis estimation, RPM estimation, and conversion of the vendor `.xbin` format.
 
 <p align="center">
-<img src="docs/example_pointcloud.png" alt="LiDAR point cloud example" width="44%"/>
+<img src="docs/example_pointcloud.png" alt="Point cloud with bounding box" width="44%"/>
 &nbsp;
-<img src="docs/dimensions_visualization.png" alt="Dimensions visualisation" width="44%"/>
+<img src="docs/dimensions_visualization.png" alt="Dimensions sketch" width="44%"/>
 </p>
-
----
 
 ## What it does
 
-Given a sequence of LiDAR `.pcd` files captured at known timestamps,
-the pipeline answers four questions:
+Given `.pcd` frames captured at known timestamps, the pipeline reports:
 
-1. **What size is the imaged object?** — axis-aligned bounding-box
-   extents (`pcd_motion.dimensions`).
-2. **Which way is it pointing?** — unsigned principal axis from PCA on
-   the cloud's covariance matrix (`pcd_motion.orientation`).
-3. **Is it moving between frames?** — cheap mean-displacement test
-   used to gate the expensive ICP step (`pcd_motion.motion`).
-4. **How fast is it rotating, and about what axis?** — ICP-based
-   point-to-point registration recovers the SO(3) transform between
-   each frame pair, decomposes it into axis/angle, and reports the
-   average rotation rate in deg/s and RPM (`pcd_motion.speed`).
+1. **Size**: axis-aligned bounding-box extents (`pcd_motion.dimensions`).
+2. **Orientation**: unsigned principal axis from PCA (`pcd_motion.orientation`).
+3. **Motion**: a mean-displacement test between frames that gates the ICP step (`pcd_motion.motion`).
+4. **Rotation rate and axis**: point-to-point ICP between frame pairs, decomposed into axis/angle, averaged to deg/s and RPM (`pcd_motion.speed`).
 
-A working sample dataset of 10 LiDAR captures of a rotating rectangle
-is included under [`data/sample/`](data/sample/) — the pipeline can be
-run end-to-end out of the box with no external data.
+Ten sample frames (320 x 240 time-of-flight captures of a rotating rectangle) are in [`data/sample/`](data/sample/), so the pipeline runs without external data.
 
----
+**Scope.** The 12 unit tests use synthetic point clouds. The pipeline has not been checked against independent ground truth on real captures, and no accuracy figures are claimed here.
 
 ## Quick start
 
@@ -53,17 +36,7 @@ pip install -e ".[dev]"
 python scripts/run_pipeline.py
 ```
 
-Expected output (your numbers will vary slightly with sample density):
-
-```
-loading 10 frames from data/sample/ …
-  motion detector       : object is MOVING
-  average rotation rate : 4.97 deg/s  (0.83 RPM)
-  average rotation axis : [-0.005  0.998 -0.061]
-  frame  0 extents      : [0.214 0.395 0.013]
-  frame  1 extents      : [0.218 0.394 0.014]
-  ...
-```
+The driver prints the motion-detector result, the average rotation rate (deg/s and RPM), the mean rotation axis, and per-frame bounding-box extents.
 
 ---
 
@@ -152,7 +125,7 @@ lidar-pointcloud-motion-pipeline/
 ├── tests/
 │   └── test_pcd_motion.py      # synthetic-cloud unit tests
 │
-├── docs/                       # study photos + dimensional sketches
+├── docs/                       # figures and test-plan table
 ├── pyproject.toml
 ├── requirements.txt
 ├── LICENSE
@@ -162,10 +135,10 @@ lidar-pointcloud-motion-pipeline/
 ## Testing
 
 ```bash
-pytest -q                # synthetic-cloud unit tests
+pytest -q                # 12 synthetic-cloud unit tests
 ```
 
-The test suite uses procedurally-generated point clouds (no LiDAR
+The tests use procedurally generated point clouds (no LiDAR
 hardware required) to verify:
 
 - AABB extents recover the synthesised box dimensions to within 5 %.
@@ -175,20 +148,14 @@ hardware required) to verify:
   rotation to floating-point precision.
 - ICP recovers a 5° rotation about z to within 1°.
 
-## Hardware reference
+## Test plan
 
-The sample dataset was captured on an industrial time-of-flight LiDAR
-sensor mounted in a controlled rotating-target rig:
+The sample frames come from a rotating-target rig built for the course project. The team's parametric test plan (object shape, orientation, and 0, 1, and 5 RPM) is below; only the 10 frames in `data/sample/` are included in this repository.
 
 <p align="center">
-<img src="docs/study_setup.png" alt="Study setup" width="60%"/>
+<img src="docs/study_setup.png" alt="Parametric test plan table" width="60%"/>
 </p>
-
-Different rotation rates (5 RPM, 15 RPM, …) and target shapes
-(rectangle, triangle, etc.) were captured to validate the pipeline
-across a range of conditions.  See `docs/` for additional reference
-images.
 
 ## License
 
-[MIT](LICENSE) — software is free for commercial, academic and educational use.
+[MIT](LICENSE)
